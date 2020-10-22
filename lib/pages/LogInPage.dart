@@ -19,10 +19,8 @@ class _LogInState extends State<LogIn> {
   TextEditingController passwordController = TextEditingController();
 
   String mobile = "", password = "";
-  List mobileList = [];
-  List passwordList = [];
+  List userList = [];
   bool isLoading = false;
-  bool isWrong = false;
 
   @override
   void initState() {
@@ -72,13 +70,13 @@ class _LogInState extends State<LogIn> {
                       TextFormField(
                         //textCapitalization: TextCapitalization.words,
                         keyboardType: TextInputType.number,
-                        decoration: textInputDecoration,
+                        decoration: textInputDecoration.copyWith(hintText: "মোবাইল নাম্বার"),
                         controller: mobileController,
                         validator: (value) {
                           fetchUser();
                           if (value.isEmpty) {
                             return "মোবাইল নাম্বার দিন";
-                          } else if (mobileList.length == 0) {
+                          } else if (userList[0]["mobile"] != mobile) {
                             return "ভুল নাম্বার";
                           }
                         },
@@ -99,17 +97,17 @@ class _LogInState extends State<LogIn> {
                             textInputDecoration.copyWith(hintText: "পাসওয়ার্ড"),
                         controller: passwordController,
                         validator: (value) {
-                          fetchPassword();
+                          fetchUser();
                           if (value.isEmpty) {
                             return "পাসওয়ার্ড দিন";
-                          } else if (passwordList[0]['password'] != password) {
+                          } else if (userList[0]['password'] != password) {
                             return "ভুল পাসওয়ার্ড";
                           }
                         },
                         onChanged: (value) {
                           setState(() {
                             password = value;
-                            fetchPassword();
+                            //fetchUser();
                           });
                         },
                       ),
@@ -119,9 +117,8 @@ class _LogInState extends State<LogIn> {
                       OutlineButton(
                         onPressed: () {
                           fetchUser();
-                          fetchPassword();
                           if (_formKey.currentState.validate()) {
-                            if (mobileList.length != 0 && passwordList[0]['password'] == password) {
+                            if (userList[0]["mobile"]==mobile && userList[0]['password'] == password) {
                               setState(() {
                                 isLoading = true;
                               });
@@ -152,23 +149,21 @@ class _LogInState extends State<LogIn> {
     );
   }
 
-  fetchUser() async {
-    dynamic result = await DatabaseHelper().geUser(mobile);
+  Future fetchUser() async {
+    dynamic result = await DatabaseHelper().getSearchedCustomer(mobile);
     setState(() {
-      mobileList = result;
+      userList = result;
     });
+    print(userList.length);
+    print(mobile);
   }
 
-  fetchPassword() async {
-    dynamic result = await DatabaseHelper().geUser(mobile);
-    setState(() {
-      passwordList = result;
-    });
-  }
 
   Future goToNextPage() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.setString("mobile", mobile);
+    await preferences.setString("name", userList[0]["name"]);
+    await preferences.setString("address", userList[0]["address"]);
     setState(() => isLoading = false);
     Fluttertoast.showToast(msg: "সাইন ইন সফল হয়েছে");
     Navigator.of(context).pushAndRemoveUntil(

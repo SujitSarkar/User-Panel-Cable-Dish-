@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:marquee_flutter/marquee_flutter.dart';
+import 'package:user_panel/pages/ProblemList.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -110,7 +111,7 @@ class _HomeState extends State<Home> {
 
               GestureDetector(
                 onTap: () {
-                  //Navigator.push(context, MaterialPageRoute(builder: (context)=>PaidCustomerList()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> Problem()));
                 },
                 child: Container(
                   color: Colors.white,
